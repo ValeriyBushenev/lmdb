@@ -6551,7 +6551,10 @@ mdb_page_search_root(MDB_cursor *mc, MDB_val *key, int flags)
 		 * while in the process of rebalancing a FreeDB branch page; we must
 		 * let that proceed. ITS#8336
 		 */
-		mdb_cassert(mc, !mc->mc_dbi || NUMKEYS(mp) > 1);
+		//mdb_cassert(mc, !mc->mc_dbi || NUMKEYS(mp) > 1);
+                if (!(!mc->mc_dbi || NUMKEYS(mp) > 1))
+                  return MDB_INVALID;
+
 		DPRINTF(("found index 0 to page %"Yu, NODEPGNO(NODEPTR(mp, 0))));
 
 		if (flags & (MDB_PS_FIRST|MDB_PS_LAST)) {
@@ -6575,14 +6578,19 @@ mdb_page_search_root(MDB_cursor *mc, MDB_val *key, int flags)
 			else {
 				i = mc->mc_ki[mc->mc_top];
 				if (!exact) {
-					mdb_cassert(mc, i > 0);
+					//mdb_cassert(mc, i > 0);
+					if (!(i > 0))
+					    return MDB_INVALID;
 					i--;
 				}
 			}
 			DPRINTF(("following index %u for key [%s]", i, DKEY(key)));
 		}
 
-		mdb_cassert(mc, i < NUMKEYS(mp));
+		//mdb_cassert(mc, i < NUMKEYS(mp));
+		if (!(i < NUMKEYS(mp)))
+			return MDB_INVALID;
+
 		node = NODEPTR(mp, i);
 
 		if ((rc = mdb_page_get(mc, NODEPGNO(node), &mp, NULL)) != 0)
